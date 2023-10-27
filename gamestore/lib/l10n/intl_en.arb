@@ -1,0 +1,6 @@
+{
+  "@@locale": "en",
+
+  "somethingWentWrong": "Something went wrong",
+  "formFieldRequired": "This is required"
+}

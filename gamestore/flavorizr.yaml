@@ -1,0 +1,39 @@
+flavors:
+  develop:
+    app:
+      name: "AequoPlay Gamestore dev"
+    icon: "assets/res/app_icon-dev.png"
+
+    android:
+      applicationId: "com.aequoplay.gamestore.dev"
+    ios:
+      bundleId: "com.aequoplay.gamestore.dev"
+    macos:
+      bundleId: "com.aequoplay.gamestore.dev"
+
+
+  prod:
+    app:
+      name: "AequoPlay Gamestore"
+    icon: "assets/res/app_icon.png"
+
+    android:
+      applicationId: "com.aequoplay.gamestore"
+    ios:
+      bundleId: "com.aequoplay.gamestore"
+    macos:
+      bundleId: "ccom.aequoplay.gamestore"
+
+
+
+instructions:
+  - android:buildGradle,
+#  - android:icons
+#  - ios:xcconfig
+#  - ios:buildTargets
+#  - ios:schema
+#  - ios:icons
+  - ios:plist
+#  - assets:clean
+
+ide: "idea"
