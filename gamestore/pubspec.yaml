@@ -104,4 +104,5 @@ flutter_intl:
   class_name: Strings
   main_locale: "en"
   output_dir: lib/l10n/generated
+  line_length: 100
   # use_deferred_loading: true
