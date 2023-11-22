@@ -1,0 +1,36 @@
+image: cirrusci/flutter:stable
+
+before_script:
+  - flutter pub get
+
+stages:
+  - Flutter test
+  - Dart format check
+  - Flutter analyze
+
+unit-test-job:
+  stage: Flutter test
+  only:
+    - merge_requests
+  tags:
+    - flutter
+  script:
+    - flutter test
+
+dart-lint-test-job:
+  stage: Dart format check
+  only:
+    - merge_requests
+  tags:
+    - flutter
+  script:
+    - dart format -l 100 --set-exit-if-changed .
+
+flutter-lint-test-job:
+  stage: Flutter analyze
+  only:
+    - merge_requests
+  tags:
+    - flutter
+  script:
+    - flutter analyze

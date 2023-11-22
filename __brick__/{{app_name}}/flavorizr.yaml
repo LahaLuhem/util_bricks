@@ -1,0 +1,39 @@
+flavors:
+  develop:
+    app:
+      name: "{{app_name}} dev"
+    icon: "assets/res/app_icon-dev.png"
+
+    android:
+      applicationId: "{{android_app_id}}.dev"
+    ios:
+      bundleId: "{{ios_bundle_id}}.dev"
+    macos:
+      bundleId: "{{ios_bundle_id}}.dev"
+
+
+  prod:
+    app:
+      name: "{{app_name}}"
+    icon: "assets/res/app_icon.png"
+
+    android:
+      applicationId: "{{android_app_id}}"
+    ios:
+      bundleId: "{{ios_bundle_id}}"
+    macos:
+      bundleId: "{{ios_bundle_id}}
+
+
+
+instructions:
+  - android:buildGradle,
+#  - android:icons
+#  - ios:xcconfig
+#  - ios:buildTargets
+#  - ios:schema
+#  - ios:icons
+  - ios:plist
+#  - assets:clean
+
+ide: "idea"
