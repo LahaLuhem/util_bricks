@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import '/l10n/generated/l10n.dart';
 import '/locator.dart';
@@ -26,6 +27,8 @@ abstract class AppSetup {
     ]);
 
     // await Firebase.initializeApp();
+
+    await initializeDateFormatting();
 
     await Locator.setup();
 
