@@ -3,7 +3,7 @@ description: A new Flutter project.
 publish_to: 'none'
 version: 0.0.1
 environment:
-  flutter: '>=3.13.0 <4.0.0'
+  flutter: '>=3.22.0 <4.0.0'
   sdk: '>=3.0.0 <4.0.0'
 
 
@@ -16,37 +16,41 @@ dependencies:
     sdk: flutter
 
   # Firebase
-  cloud_firestore: ^4.13.2
-  firebase_core: ^2.23.0
-  firebase_crashlytics: ^3.4.5
+  cloud_firestore: ^4.17.5
+  firebase_analytics: ^10.10.7
+  firebase_core: ^2.32.0
+  firebase_crashlytics: ^3.5.7
+  firebase_remote_config: ^4.4.7
 
   # Backend
-  get_it: ^7.6.4
+  get_it: ^7.7.0
 
   # UI
+  auto_size_text: ^3.0.0
   animated_list_plus: ^0.5.2
-  cupertino_icons: ^1.0.6
-  flutter_form_builder: ^9.1.1
+  cupertino_icons: ^1.0.8
   enough_platform_widgets: ^1.0.0
+  flutter_form_builder: ^9.3.0
+  gap: ^3.0.1
 
   # Utils
   flutter_screenutil: ^5.9.0
-  flutter_svg: ^2.0.9
-  form_builder_validators: ^9.1.0
-  go_router: ^12.1.1
-  intl: ^0.18.1
-  intl_utils: ^2.8.5
+  flutter_svg: ^2.0.10+1
+  form_builder_validators: ^10.0.1
+  go_router: ^14.1.4
+  intl: ^0.19.0
+  intl_utils: ^2.8.7
 
   # Data
-  envied: ^0.5.2
+  envied: ^0.5.4+1
   fpdart: ^1.1.0
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  json_annotation: ^4.8.1
-  json_serializable: ^6.7.1
+  json_annotation: ^4.9.0
+  json_serializable: ^6.8.0
 
   # Networking
-  dio: ^5.3.4
+  dio: ^5.4.3+1
 
   # Logging
   talker: ^3.1.4
@@ -55,7 +59,8 @@ dependencies:
   # State management
   equatable: ^2.0.5
   informers: ^0.0.3+1
-  provider: ^6.1.1
+  provider: ^6.1.2
+  veto: ^0.0.10
 
 
 
@@ -64,12 +69,13 @@ dependencies:
 
 dev_dependencies:
   # Generators
-  build_runner: ^2.4.6
-  envied_generator: ^0.5.2
+  build_runner: ^2.4.10
+  envied_generator: ^0.5.4+1
+  hive_generator: ^2.0.1
 
   # Analysis
-  analyzer: ^5.13.0
-  flutter_lints: ^3.0.1
+  analyzer: ^6.0.0
+  flutter_lints: ^4.0.0
   very_good_analysis: ^5.1.0
 
   # Testing
@@ -77,17 +83,19 @@ dev_dependencies:
     sdk: flutter
   faker: ^2.1.0
   gherkin_unit_test: ^0.0.5
-  mockito: ^5.4.3
+  mockito: ^5.4.4
 
 
   # Bundling
   #dart run dependency_validator
   dependency_validator: ^3.2.3
-  #dart run dart_code_metrics:metrics check-unused-files lib
+  #dart run dart_code_metrics:metrics check-unused-files lib --disable-sunset-warning
 #  dart_code_metrics: ^5.6.0
-  flutter_flavorizr: ^2.2.1
-  flutter_native_splash: ^2.3.6
+  flutter_flavorizr: ^2.2.3
+  #dart run flutter_launcher_icons:main -f flutter_launcher_icons*
   flutter_launcher_icons: ^0.13.1
+  #dart run flutter_native_splash:create --flavors develop,prod
+  flutter_native_splash: ^2.4.0
 
 
 
