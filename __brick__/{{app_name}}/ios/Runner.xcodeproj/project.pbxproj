@@ -177,6 +177,7 @@
 			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
 			buildPhases = (
 				C9AB6FC4BF39B56152D51A45 /* [CP] Check Pods Manifest.lock */,
+				241018E02C482CBF008A5569 /* [Firebase] Copy flavour-specific  */,
 				9740EEB61CF901F6004384FC /* Run Script */,
 				97C146EA1CF9000F007C117D /* Sources */,
 				97C146EB1CF9000F007C117D /* Frameworks */,
@@ -185,6 +186,7 @@
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				7BF18DC9F6E41146D587F360 /* [CP] Embed Pods Frameworks */,
 				F3724DF3309EA42A1E185243 /* [CP] Copy Pods Resources */,
+				241018DE2C4819EB008A5569 /* dSYM upload */,
 			);
 			buildRules = (
 			);
@@ -256,6 +258,42 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		241018DE2C4819EB008A5569 /* dSYM upload */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "dSYM upload";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/FirebaseCrashlytics/run\"\n\"${PODS_ROOT}/FirebaseCrashlytics/upload-symbols\" -gsp \"${PROJECT_DIR}/Runner/GoogleService-Info.plist\" -p ios \"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}\"\n";
+		};
+		241018E02C482CBF008A5569 /* [Firebase] Copy flavour-specific  */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Firebase] Copy flavour-specific ";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script copies the right firebase configuration ( GoogleService-Info.plist file ) for the running flavor.\n# It must be run as a Build Phase. It assumes two flavors: \"develop\" and \"prod\".\n\nif [ \"${CONFIGURATION}\" == \"Debug-prod\" ] || [ \"${CONFIGURATION}\" == \"Release-prod\" ] || [ \"${CONFIGURATION}\" == \"Profile-prod\" ];\nthen\n  cp -r \"${PROJECT_DIR}/Runner/Firebase/prod/GoogleService-Info.plist\" \"${PROJECT_DIR}/Runner/GoogleService-Info.plist\"\nelif [ \"${CONFIGURATION}\" == \"Debug-develop\" ] || [ \"${CONFIGURATION}\" == \"Release-develop\" ] || [ \"${CONFIGURATION}\" == \"Profile-develop\" ]; \nthen\n  cp -r \"${PROJECT_DIR}/Runner/Firebase/develop/GoogleService-Info.plist\" \"${PROJECT_DIR}/Runner/GoogleService-Info.plist\"\nfi\n";
+		};
 		3B06AD1E1E4923F5004D2608 /* Thin Binary */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;

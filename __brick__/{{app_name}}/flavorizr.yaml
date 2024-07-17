@@ -22,7 +22,7 @@ flavors:
     ios:
       bundleId: "{{ios_bundle_id}}"
     macos:
-      bundleId: "{{ios_bundle_id}}
+      bundleId: "{{ios_bundle_id}}"
 
 
 
