@@ -46,13 +46,11 @@ abstract class ConstText {
 
   /// Level-1 body with a link
   static TextStyle get bodyLink1 => body1.copyWith(
-        fontWeight: FontWeight.w600,
-        color: ConstColours.darkSilver,
-        decoration: TextDecoration.underline,
-      );
+    fontWeight: FontWeight.w600,
+    color: ConstColours.darkSilver,
+    decoration: TextDecoration.underline,
+  );
 
   /// Destructive action (red) for iOS
-  static const cupertinoDestructiveAction = TextStyle(
-    color: ConstColours.cupertinoDestructiveRed,
-  );
+  static const cupertinoDestructiveAction = TextStyle(color: ConstColours.cupertinoDestructiveRed);
 }

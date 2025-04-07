@@ -4,14 +4,14 @@ enum SupportedLanguage {
   en,
 
   /// Dutch
-  nl;
+  nl,
 }
 
 ///extension
 extension SupportedLanguagesExtension on String? {
   /// Resolves the default supported language
   SupportedLanguage get toSupportedLanguage => SupportedLanguage.values.firstWhere(
-        (element) => element.name == this?.trim().toLowerCase(),
-        orElse: () => SupportedLanguage.en,
-      );
+    (element) => element.name == this?.trim().toLowerCase(),
+    orElse: () => SupportedLanguage.en,
+  );
 }

@@ -1,18 +1,10 @@
 /// Page-routes in the app
 enum AppRoute {
   /// First
-  home(
-    _RoutesInfo(
-      routeAddress: '/',
-    ),
-  ),
+  home(_RoutesInfo(routeAddress: '/')),
 
   /// Signup/Sign-in
-  onboarding(
-    _RoutesInfo(
-      routeAddress: '/onboarding',
-    ),
-  );
+  onboarding(_RoutesInfo(routeAddress: '/onboarding'));
 
   final _RoutesInfo _routeInfo;
 

@@ -1,5 +1,4 @@
 import 'package:flutter/widgets.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../data/constants/const_durations.dart';
 
@@ -13,12 +12,20 @@ class AnimatedColumn extends StatelessWidget {
     this.mainAxisAlignment = MainAxisAlignment.start,
     this.mainAxisSize = MainAxisSize.max,
     this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.spacing = 0,
+    this.textDirection,
+    this.verticalDirection = VerticalDirection.down,
+    this.textBaseline,
+    this.maxAnimatingChildren = 2,
     super.key,
   });
 
   /// [duration] specifies the duration of the add/remove animation
   final Duration duration;
+
+  /// [maxAnimatingChildren] determines the maximum number of chidren that can
+  /// be animating at once, if more are removed or added at within an animation
+  /// duration they will pop in instead
+  final int maxAnimatingChildren;
 
   /// [Column] property
   final MainAxisAlignment mainAxisAlignment;
@@ -29,19 +36,34 @@ class AnimatedColumn extends StatelessWidget {
   /// [Column] property
   final CrossAxisAlignment crossAxisAlignment;
 
-  final double spacing;
+  /// [Column] property
+  final TextDirection? textDirection;
+
+  /// [Column] property
+  final VerticalDirection verticalDirection;
+
+  /// [Column] property
+  final TextBaseline? textBaseline;
 
   /// [Column] property
   final List<Widget> children;
 
   @override
   Widget build(BuildContext context) => Column(
-    mainAxisSize: mainAxisSize,
-    mainAxisAlignment: mainAxisAlignment,
     crossAxisAlignment: crossAxisAlignment,
-    spacing: spacing,
-    children: children
-        .animate(interval: ConstDurations.halfDefaultAnimationDuration)
-        .fade(duration: duration),
+    children: [
+      for (int i = 0; i < children.length + maxAnimatingChildren; i++)
+        AnimatedSwitcher(
+          duration: duration,
+          switchInCurve: Curves.easeInOut,
+          switchOutCurve: Curves.easeInOut,
+          transitionBuilder:
+              (child, animation) => FadeTransition(
+                opacity: animation,
+                child: SizeTransition(sizeFactor: animation, axisAlignment: -1, child: child),
+              ),
+          child: i < children.length ? children[i] : const SizedBox.shrink(),
+        ),
+    ],
   );
 }

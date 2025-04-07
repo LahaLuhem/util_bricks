@@ -7,5 +7,5 @@ enum FormFieldType {
   email,
 
   /// Masked password value
-  password;
+  password,
 }

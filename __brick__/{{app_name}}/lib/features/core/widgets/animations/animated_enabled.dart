@@ -24,12 +24,9 @@ class AnimatedEnabled extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AnimatedOpacity(
-        opacity: isEnabled ? 1 : ConstOpacities.defaultDisabled,
-        duration: animationDuration,
-        curve: Curves.easeInOut,
-        child: IgnorePointer(
-          ignoring: !isEnabled,
-          child: child,
-        ),
-      );
+    opacity: isEnabled ? 1 : ConstOpacities.defaultDisabled,
+    duration: animationDuration,
+    curve: Curves.easeInOut,
+    child: IgnorePointer(ignoring: !isEnabled, child: child),
+  );
 }

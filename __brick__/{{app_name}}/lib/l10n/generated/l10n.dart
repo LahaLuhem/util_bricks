@@ -28,10 +28,7 @@ class Strings {
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<Strings> load(Locale locale) {
-    final name =
-        (locale.countryCode?.isEmpty ?? false)
-            ? locale.languageCode
-            : locale.toString();
+    final name = (locale.countryCode?.isEmpty ?? false) ? locale.languageCode : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -57,22 +54,12 @@ class Strings {
 
   /// `Something went wrong`
   String get somethingWentWrong {
-    return Intl.message(
-      'Something went wrong',
-      name: 'somethingWentWrong',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Something went wrong', name: 'somethingWentWrong', desc: '', args: []);
   }
 
   /// `This is required`
   String get formFieldRequired {
-    return Intl.message(
-      'This is required',
-      name: 'formFieldRequired',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('This is required', name: 'formFieldRequired', desc: '', args: []);
   }
 }
 
