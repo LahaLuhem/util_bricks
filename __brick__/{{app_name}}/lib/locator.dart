@@ -1,3 +1,5 @@
+// ignore_for_file: no-empty-block
+
 import 'dart:async';
 
 import 'package:get_it/get_it.dart';

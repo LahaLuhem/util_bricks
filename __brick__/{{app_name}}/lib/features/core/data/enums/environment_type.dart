@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '/env/env.dart';
+import '/env/env_config.dart';
 import 'supported_language.dart';
 
 /// Defines the app flavours/environments in use

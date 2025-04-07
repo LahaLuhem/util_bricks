@@ -56,7 +56,7 @@ mixin class LoggingService {
     try {
       localStackTrace =
           stackTrace ??
-          StackTrace.fromString(StackTrace.current.toString().split('\n').sublist(1).join('\n'));
+              StackTrace.fromString(StackTrace.current.toString().split('\n').sublist(1).join('\n'));
     } on Exception catch (_) {
       localStackTrace = StackTrace.current;
     }

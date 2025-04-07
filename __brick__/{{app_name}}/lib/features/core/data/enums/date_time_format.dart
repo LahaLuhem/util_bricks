@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
 /// All the [DateFormat]s formats to be used in the app.
-enum DateTimeFormats {
+enum DateTimeFormat {
   /// (04-20-2009)
   shortDayMonthLongYearHyphens('dd-MM-yyyy'),
 
@@ -14,5 +14,5 @@ enum DateTimeFormats {
   /// Wrapper for format string
   DateFormat get dateFormat => DateFormat(format);
 
-  const DateTimeFormats(this.format);
+  const DateTimeFormat(this.format);
 }

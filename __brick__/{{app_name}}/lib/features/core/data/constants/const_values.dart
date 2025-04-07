@@ -1,5 +1,3 @@
-// ignore_for_file: public_member_api_docs
-
 /// Stores the literals/constants used throughout the app
 abstract class ConstValues {
   // A

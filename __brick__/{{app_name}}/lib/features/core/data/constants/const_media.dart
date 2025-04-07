@@ -45,17 +45,18 @@ abstract class ConstMedia {
     double? width,
     BoxFit fit = BoxFit.fitHeight,
   }) => uriOrUint8List.fold(
-    (Uri iconReference) =>
+    (iconReference) =>
         (iconReference.isScheme(ConstValues.httpsScheme))
             ? SvgPicture.network(iconReference.toString(), height: height, width: width, fit: fit)
             : SvgPicture.asset(iconReference.toString(), height: height, width: width, fit: fit),
-    (Uint8List dataBytes) => SvgPicture.memory(dataBytes, height: height, width: width, fit: fit),
+    (dataBytes) => SvgPicture.memory(dataBytes, height: height, width: width, fit: fit),
   );
 
   ///Builds an [ImageProvider] of respective type, given the [urlPath].
   static ImageProvider imageFromProviderPath({required String urlPath}) {
     final uri = Uri.parse(urlPath);
     if (uri.isScheme(ConstValues.httpsScheme)) return NetworkImage(urlPath);
+
     return AssetImage(uri.toString());
   }
 }

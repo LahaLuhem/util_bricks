@@ -18,17 +18,20 @@ class Strings {
   static Strings? _current;
 
   static Strings get current {
-    assert(_current != null,
-        'No instance of Strings was loaded. Try to initialize the Strings delegate before accessing Strings.current.');
+    assert(
+      _current != null,
+      'No instance of Strings was loaded. Try to initialize the Strings delegate before accessing Strings.current.',
+    );
     return _current!;
   }
 
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<Strings> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false)
-        ? locale.languageCode
-        : locale.toString();
+    final name =
+        (locale.countryCode?.isEmpty ?? false)
+            ? locale.languageCode
+            : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -41,8 +44,10 @@ class Strings {
 
   static Strings of(BuildContext context) {
     final instance = Strings.maybeOf(context);
-    assert(instance != null,
-        'No instance of Strings present in the widget tree. Did you add Strings.delegate in localizationsDelegates?');
+    assert(
+      instance != null,
+      'No instance of Strings present in the widget tree. Did you add Strings.delegate in localizationsDelegates?',
+    );
     return instance!;
   }
 
@@ -75,9 +80,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<Strings> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales {
-    return const <Locale>[
-      Locale.fromSubtags(languageCode: 'en'),
-    ];
+    return const <Locale>[Locale.fromSubtags(languageCode: 'en')];
   }
 
   @override

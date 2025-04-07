@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, prefer-match-file-name
 
 import 'package:flutter/widgets.dart';
 
@@ -16,20 +16,17 @@ class AnimationControllerProvider extends StatefulWidget {
     AnimationBehavior animationBehavior = AnimationBehavior.normal,
     bool repeatAnimation = true,
     super.key,
-  })  : _value = value,
-        _duration = duration,
-        _reverseDuration = reverseDuration,
-        _debugLabel = debugLabel,
-        _lowerBound = lowerBound,
-        _upperBound = upperBound,
-        _animationBehavior = animationBehavior,
-        _repeatAnimation = repeatAnimation;
+  }) : _value = value,
+       _duration = duration,
+       _reverseDuration = reverseDuration,
+       _debugLabel = debugLabel,
+       _lowerBound = lowerBound,
+       _upperBound = upperBound,
+       _animationBehavior = animationBehavior,
+       _repeatAnimation = repeatAnimation;
 
   ///Builder
-  final Widget Function(
-    BuildContext context,
-    AnimationController animationController,
-  ) builder;
+  final Widget Function(BuildContext context, AnimationController animationController) builder;
 
   final double? _value;
   final Duration? _duration;
@@ -46,7 +43,7 @@ class AnimationControllerProvider extends StatefulWidget {
 
 class _AnimationControllerProviderState extends State<AnimationControllerProvider>
     with TickerProviderStateMixin {
-  late final AnimationController _animationController = AnimationController(
+  late final _animationController = AnimationController(
     vsync: this,
     value: widget._value,
     duration: widget._duration,
@@ -82,8 +79,5 @@ class _AnimationControllerProviderState extends State<AnimationControllerProvide
   }
 
   @override
-  Widget build(BuildContext context) => widget.builder(
-        context,
-        _animationController,
-      );
+  Widget build(BuildContext context) => widget.builder(context, _animationController);
 }

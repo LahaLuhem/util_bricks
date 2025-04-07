@@ -1,11 +1,12 @@
+// _Routers are never used directly
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import '/locator.dart';
-import '../../abstracts/mwa_navigation.dart';
-import '../../abstracts/router/routes.dart';
+import '../../abstracts/navigation.dart';
+import '../../abstracts/router/app_route.dart';
 
 part 'core_router.dart';
 part 'home_router.dart';
@@ -13,9 +14,7 @@ part 'home_router.dart';
 /// Provides convenient navigation functions
 class NavigationService {
   /// Constructor
-  NavigationService()
-      : core = _CoreRouter(),
-        home = _HomeRouter();
+  NavigationService() : core = _CoreRouter(), home = _HomeRouter();
 
   /// Core
   final _CoreRouter core;

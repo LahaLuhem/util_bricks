@@ -1,3 +1,5 @@
+// ignore_for_file: prefer-match-file-name
+
 import 'package:flutter/material.dart';
 
 import '../../data/constants/const_durations.dart';
@@ -57,67 +59,53 @@ class VerticalShrink extends StatelessWidget {
   final double? width;
 
   @override
-  Widget build(BuildContext context) {
-    return ClipRect(
-      child: AnimatedSize(
-        duration: sizeDuration,
-        curve: sizeCurve,
-        alignment: alignment,
-        child: AnimatedSwitcher(
-          duration: fadeDuration,
-          switchInCurve: fadeInCurve,
-          switchOutCurve: fadeOutCurve,
-          transitionBuilder: hideChild != null
-              ? (child, animation) => FadeTransition(
-                    opacity: Tween<double>(begin: 0, end: 1).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Interval(
-                          curveIntervalStart,
-                          1,
-                          curve: Curves.easeInOut,
-                        ),
-                      ),
+  Widget build(BuildContext context) => ClipRect(
+    child: AnimatedSize(
+      duration: sizeDuration,
+      curve: sizeCurve,
+      alignment: alignment,
+      child: AnimatedSwitcher(
+        duration: fadeDuration,
+        switchInCurve: fadeInCurve,
+        switchOutCurve: fadeOutCurve,
+        transitionBuilder:
+            hideChild != null
+                ? (child, animation) => FadeTransition(
+                  opacity: Tween<double>(begin: 0, end: 1).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Interval(curveIntervalStart, 1, curve: Curves.easeInOut),
                     ),
-                    child: child,
-                  )
-              : AnimatedSwitcher.defaultTransitionBuilder,
-          layoutBuilder: (currentChild, previousChildren) {
-            final children = List<Widget>.empty(growable: true);
-            if (currentChild != null) {
-              if (previousChildren.isEmpty) {
-                children.add(currentChild);
-              } else {
-                children.addAll(
-                  [
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      child: previousChildren[0],
-                    ),
-                    currentChild,
-                  ],
-                );
-              }
+                  ),
+                  child: child,
+                )
+                : AnimatedSwitcher.defaultTransitionBuilder,
+        layoutBuilder: (currentChild, previousChildren) {
+          final children = List<Widget>.empty(growable: true);
+          if (currentChild != null) {
+            if (previousChildren.isEmpty) {
+              children.add(currentChild);
+            } else {
+              children.addAll([
+                Positioned(left: 0, right: 0, child: previousChildren.first),
+                currentChild,
+              ]);
             }
-            return Stack(
-              clipBehavior: Clip.none,
-              alignment: alignment,
-              children: children.isNotEmpty ? children : previousChildren,
-            );
-          },
-          child: show
-              ? showChild
-              : (hideChild ??
-                  SizedBox(
-                    key: _key,
-                    width: width ?? double.infinity,
-                    height: 0,
-                  )),
-        ),
+          }
+
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: alignment,
+            children: children.isNotEmpty ? children : previousChildren,
+          );
+        },
+        child:
+            show
+                ? showChild
+                : (hideChild ?? SizedBox(key: _key, width: width ?? double.infinity, height: 0)),
       ),
-    );
-  }
+    ),
+  );
 }
 
 /// Animates the horizontal shrinking and fading of its child widgets.
@@ -171,50 +159,39 @@ class HorizontalShrink extends StatelessWidget {
   final double? height;
 
   @override
-  Widget build(BuildContext context) {
-    return ClipRect(
-      child: AnimatedSize(
-        duration: sizeDuration,
-        curve: sizeCurve,
-        alignment: alignment,
-        child: AnimatedSwitcher(
-          duration: fadeDuration,
-          switchInCurve: fadeInCurve,
-          layoutBuilder: (currentChild, previousChildren) {
-            final children = List<Widget>.empty(growable: true);
-            if (currentChild != null) {
-              if (previousChildren.isEmpty) {
-                children.add(currentChild);
-              } else {
-                children.addAll(
-                  [
-                    Positioned(
-                      top: 0,
-                      bottom: 0,
-                      child: previousChildren[0],
-                    ),
-                    currentChild,
-                  ],
-                );
-              }
+  Widget build(BuildContext context) => ClipRect(
+    child: AnimatedSize(
+      duration: sizeDuration,
+      curve: sizeCurve,
+      alignment: alignment,
+      child: AnimatedSwitcher(
+        duration: fadeDuration,
+        switchInCurve: fadeInCurve,
+        layoutBuilder: (currentChild, previousChildren) {
+          final children = List<Widget>.empty(growable: true);
+          if (currentChild != null) {
+            if (previousChildren.isEmpty) {
+              children.add(currentChild);
+            } else {
+              children.addAll([
+                Positioned(top: 0, bottom: 0, child: previousChildren.first),
+                currentChild,
+              ]);
             }
-            return Stack(
-              clipBehavior: Clip.none,
-              alignment: alignment,
-              children: children.isNotEmpty ? children : previousChildren,
-            );
-          },
-          switchOutCurve: fadeOutCurve,
-          child: show
-              ? showChild
-              : (hideChild ??
-                  SizedBox(
-                    key: _key,
-                    width: 0,
-                    height: height ?? double.infinity,
-                  )),
-        ),
+          }
+
+          return Stack(
+            clipBehavior: Clip.none,
+            alignment: alignment,
+            children: children.isNotEmpty ? children : previousChildren,
+          );
+        },
+        switchOutCurve: fadeOutCurve,
+        child:
+            show
+                ? showChild
+                : (hideChild ?? SizedBox(key: _key, width: 0, height: height ?? double.infinity)),
       ),
-    );
-  }
+    ),
+  );
 }

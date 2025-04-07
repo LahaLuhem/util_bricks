@@ -1,16 +1,13 @@
-// ignore_for_file: sort_constructors_first
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 export 'package:cloud_firestore/cloud_firestore.dart';
 
 /// Conversion between [DateTime] and Firestore's [Timestamp].
+// ignore: prefer-match-file-name
 class TimestampConverter implements JsonConverter<DateTime, Timestamp> {
   @override
-  DateTime fromJson(Timestamp timestamp) {
-    return timestamp.toDate();
-  }
+  DateTime fromJson(Timestamp timestamp) => timestamp.toDate();
 
   @override
   Timestamp toJson(DateTime date) => Timestamp.fromDate(date);

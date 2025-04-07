@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
-
 /// Page-routes in the app
 enum AppRoute {
   /// First

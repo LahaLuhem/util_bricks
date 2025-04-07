@@ -13,9 +13,9 @@ class DecimalLengthLimitingTextInputFormatter extends TextInputFormatter {
     this.maxWholeNumberLength, [
     this.maxDecimalNumberLength = 2,
   ]) : assert(
-          maxWholeNumberLength >= 0 && maxDecimalNumberLength >= 0,
-          "Arguments can't be negative",
-        );
+         maxWholeNumberLength >= 0 && maxDecimalNumberLength >= 0,
+         "Arguments can't be negative",
+       );
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
@@ -27,7 +27,7 @@ class DecimalLengthLimitingTextInputFormatter extends TextInputFormatter {
     if (!_canParseToDouble(text) || text.contains('-')) return oldValue;
 
     final splitNumber = text.split('.');
-    final wholeNumbers = splitNumber[0];
+    final wholeNumbers = splitNumber.first;
     String? decimalNumbers;
 
     if (splitNumber.length > 1) {
@@ -60,8 +60,5 @@ class DecimalLengthLimitingTextInputFormatter extends TextInputFormatter {
     );
   }
 
-  bool _canParseToDouble(String value) {
-    final formattedValue = value.replaceAll(',', '.');
-    return double.tryParse(formattedValue) != null;
-  }
+  bool _canParseToDouble(String value) => double.tryParse(value.replaceAll(',', '.')) != null;
 }

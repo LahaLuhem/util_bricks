@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
-import '/features/core/data/constants/const_durations.dart';
+import '/features/core/data/constants/core_constants.dart';
 
 /// Creates a shrink animation for a dropdown.
 class DropdownShrink extends StatelessWidget {
@@ -60,91 +60,67 @@ class DropdownShrink extends StatelessWidget {
   final EdgeInsets clipPadding;
 
   @override
-  Widget build(BuildContext context) {
-    return ClipPath(
-      clipper: _DropdownClipper(
-        fieldRadius: clipFieldRadius,
-        padding: clipPadding,
-      ),
-      child: AnimatedSize(
-        duration: sizeDuration,
-        curve: sizeCurve,
-        alignment: alignment,
-        child: AnimatedSwitcher(
-          duration: fadeDuration,
-          switchInCurve: fadeInCurve,
-          switchOutCurve: fadeOutCurve,
-          transitionBuilder: hide != null
-              ? (child, animation) => FadeTransition(
-                    opacity: Tween<double>(begin: 0, end: 1).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: const Interval(0.15, 1, curve: Curves.easeInOut),
-                      ),
+  Widget build(BuildContext context) => ClipPath(
+    clipper: _DropdownClipper(fieldRadius: clipFieldRadius, padding: clipPadding),
+    child: AnimatedSize(
+      duration: sizeDuration,
+      curve: sizeCurve,
+      alignment: alignment,
+      child: AnimatedSwitcher(
+        duration: fadeDuration,
+        switchInCurve: fadeInCurve,
+        switchOutCurve: fadeOutCurve,
+        transitionBuilder:
+            hide != null
+                ? (child, animation) => FadeTransition(
+                  opacity: Tween<double>(begin: 0, end: 1).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: const Interval(0.15, 1, curve: Curves.easeInOut),
                     ),
-                    child: child,
-                  )
-              : AnimatedSwitcher.defaultTransitionBuilder,
-          layoutBuilder: (currentChild, previousChildren) {
-            var children = previousChildren;
-            if (currentChild != null) {
-              if (previousChildren.isEmpty) {
-                children = [currentChild];
-              } else {
-                children = [
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    child: previousChildren[0],
                   ),
-                  currentChild,
-                ];
-              }
-            }
-            return Stack(
-              clipBehavior: Clip.none,
-              alignment: alignment,
-              children: children,
-            );
-          },
-          child: show
-              ? child
-              : (hide ??
-                  SizedBox(
-                    key: _key,
-                    width: width ?? double.infinity,
-                    height: 0,
-                  )),
-        ),
+                  child: child,
+                )
+                : AnimatedSwitcher.defaultTransitionBuilder,
+        layoutBuilder: (currentChild, previousChildren) {
+          var children = previousChildren;
+          if (currentChild != null) {
+            children =
+                previousChildren.isEmpty
+                    ? [currentChild]
+                    : [Positioned(left: 0, right: 0, child: previousChildren.first), currentChild];
+          }
+
+          return Stack(clipBehavior: Clip.none, alignment: alignment, children: children);
+        },
+        child:
+            show
+                ? child
+                : (hide ?? SizedBox(key: _key, width: width ?? double.infinity, height: 0)),
       ),
-    );
-  }
+    ),
+  );
 }
 
 class _DropdownClipper extends CustomClipper<Path> {
-  const _DropdownClipper({
-    required this.padding,
-    required this.fieldRadius,
-  });
+  const _DropdownClipper({required this.padding, required this.fieldRadius});
 
   final EdgeInsets padding;
   final double fieldRadius;
 
   @override
-  Path getClip(Size size) {
-    final path = Path()
-      ..moveTo(fieldRadius, 0)
-      ..relativeQuadraticBezierTo(-fieldRadius, 0, -fieldRadius, -fieldRadius)
-      ..lineTo(0, 0)
-      ..lineTo(-padding.left, 0)
-      ..lineTo(-padding.left, size.height + padding.bottom)
-      ..lineTo(size.width + padding.right, size.height + padding.bottom)
-      ..lineTo(size.width + padding.right, -fieldRadius)
-      ..lineTo(size.width, -fieldRadius)
-      ..relativeQuadraticBezierTo(0, fieldRadius, -fieldRadius, fieldRadius)
-      ..close();
-    return path;
-  }
+  Path getClip(Size size) =>
+      Path()
+        ..moveTo(fieldRadius, 0)
+        ..relativeQuadraticBezierTo(-fieldRadius, 0, -fieldRadius, -fieldRadius)
+        ..lineTo(0, 0)
+        ..lineTo(-padding.left, 0)
+        ..lineTo(-padding.left, size.height + padding.bottom)
+        ..lineTo(size.width + padding.right, size.height + padding.bottom)
+        ..lineTo(size.width + padding.right, -fieldRadius)
+        ..lineTo(size.width, -fieldRadius)
+        ..relativeQuadraticBezierTo(0, fieldRadius, -fieldRadius, fieldRadius)
+        ..close();
 
   @override
   bool shouldReclip(CustomClipper<Path> oldClipper) => false;

@@ -15,33 +15,17 @@ class GsAppBar extends PlatformAppBar implements PreferredSizeWidget {
     super.automaticallyImplyLeading = true,
     super.key,
   }) : super(
-          title: centerTitle
-              ? Center(
-                  child: title,
-                )
-              : title,
-          backgroundColor: ConstColours.indigoDye,
-          leading: leading ??
-              IgnorePointer(
-                child: Opacity(
-                  opacity: 0,
-                  child: trailing,
-                ),
-              ),
-          trailingActions: trailing != null
-              ? [trailing]
-              : (centerTitle
-                  ? [
-                      IgnorePointer(
-                        child: Opacity(opacity: 0, child: leading),
-                      ),
-                    ]
-                  : []),
-          cupertino: (_, __) => CupertinoNavigationBarData(
-            noMaterialParent: true,
-            transitionBetweenRoutes: true,
-          ),
-        );
+         title: centerTitle ? Center(child: title) : title,
+         backgroundColor: ConstColours.indigoDye,
+         leading: leading ?? IgnorePointer(child: Opacity(opacity: 0, child: trailing)),
+         trailingActions:
+             trailing != null
+                 ? [trailing]
+                 : (centerTitle ? [IgnorePointer(child: Opacity(opacity: 0, child: leading))] : []),
+         cupertino:
+             (_, _) =>
+                 CupertinoNavigationBarData(noMaterialParent: true, transitionBetweenRoutes: true),
+       );
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);

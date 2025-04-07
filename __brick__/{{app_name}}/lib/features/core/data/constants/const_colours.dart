@@ -1,5 +1,3 @@
-// ignore_for_file: public_member_api_docs
-
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart' show CupertinoColors, CupertinoThemeData;
@@ -29,38 +27,24 @@ abstract class ConstColours {
 }
 
 ThemeData get materialLightTheme => ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.light,
-      colorSchemeSeed: ConstColours.indigoDye,
-      cardTheme: const CardTheme(
-        shape: RoundedRectangleBorder(
-          borderRadius: ConstSizes.genericCurvatureBorderRadius,
-        ),
-        elevation: ConstSizes.defaultElevation,
-      ),
-    );
+  useMaterial3: true,
+  brightness: Brightness.light,
+  colorSchemeSeed: ConstColours.indigoDye,
+  cardTheme: const CardTheme(
+    shape: RoundedRectangleBorder(borderRadius: ConstSizes.genericCurvatureBorderRadius),
+    elevation: ConstSizes.defaultElevation,
+  ),
+);
 
 ThemeData get materialDarkTheme => ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      colorSchemeSeed: ConstColours.indigoDye,
-    );
+  useMaterial3: true,
+  brightness: Brightness.dark,
+  colorSchemeSeed: ConstColours.indigoDye,
+);
 
 CupertinoThemeData get cupertinoLightTheme => const CupertinoThemeData(
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: CupertinoColors.systemGroupedBackground,
-      // primaryColor: ConstColours.indigoDye,
-      // primaryContrastingColor: ConstColours.orangeRed,
-    );
-
-CupertinoThemeData get cupertinoDarkTheme => const CupertinoThemeData(
-      brightness: Brightness.dark,
-      // primaryColor: ConstColours.indigoDye,
-      // primaryContrastingColor: ConstColours.orangeRed,
-    );
-
-ThemeData get cupertinoThemeLightHack =>
-    materialLightTheme.copyWith(cupertinoOverrideTheme: cupertinoLightTheme);
-
-ThemeData get cupertinoThemeDarkHack =>
-    materialDarkTheme.copyWith(cupertinoOverrideTheme: cupertinoDarkTheme);
+  brightness: Brightness.light,
+  scaffoldBackgroundColor: CupertinoColors.systemGroupedBackground,
+  // primaryColor: ConstColours.indigoDye,
+  // primaryContrastingColor: ConstColours.orangeRed,
+);

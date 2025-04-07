@@ -1,41 +1,24 @@
-///extension
-extension StringExtensions on String {
-  /// Capitalizes the first letter of every word, except some exceptions such as
-  /// articles, numeral-names, place-words etc.
-  String get capitalizeWithBlockedValues {
-    final blockedValues = ['op', 'de', 'het', 'een', "'s-", '‘s-'];
+// ignore_for_file: prefer-match-file-name
 
-    String capitaliseFirst(String value, List<String> blockedValues) =>
-        value.isNotEmpty && !value._isBlocked(blockedValues)
-            ? value[0].toUpperCase() + (value.length > 1 ? value.substring(1).toLowerCase() : '')
-            : value.toLowerCase();
+import 'package:flutter/widgets.dart';
 
-    return split(' ')
-        .map(
-          (nonCapitalised) => nonCapitalised
-              .split('-')
-              .map((nonCapitalised) => capitaliseFirst(nonCapitalised, blockedValues))
-              .join('-'),
-        )
-        .join(' ');
-  }
+extension StringExtension on String {
+  String capitalize() => isNotEmpty ? '${this[0].toUpperCase()}${characters.getRange(1)}' : this;
+}
 
-  /// Returns the character-wise difference.
-  String difference(String? other) {
-    if (other != null) {
-      if (length == other.length) {
-        return '';
-      } else if (length > other.length) {
-        return replaceAll(other, '');
-      } else {
-        return other.replaceAll(this, '');
-      }
-    } else if (other == null) {
-      return this;
-    } else {
-      return '';
+extension NullableStringExtesions on String? {
+  String? nullIfEmpty() => this?.isNotEmpty ?? false ? this : null;
+}
+
+extension StringTemplateExension on String {
+  /// Define placeholder text in this format: `'Today is %1\$ and tomorrow is %2\$'`
+  /// Usage: 'text.insertPlaceholders([replacements]: ['Monday', 'Tuesday'])'
+  String insertPlaceholders({required List<String> replacements}) {
+    var result = this;
+    for (var i = 1; i < replacements.length + 1; i++) {
+      result = result.replaceAll('%$i\$', replacements[i - 1]);
     }
-  }
 
-  bool _isBlocked(List<String> blockedValues) => blockedValues.contains(toLowerCase());
+    return result;
+  }
 }

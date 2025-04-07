@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../views/home/home_view.dart';
-import 'routes.dart';
+import 'app_route.dart';
 
 // TODO(mehul): Use Shell navigation later
 // final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -17,12 +17,12 @@ class AppRouter {
       GoRoute(
         path: AppRoute.onboarding.routeAddress,
         name: AppRoute.onboarding.name,
-        builder: (_, __) => const SizedBox.shrink(),
+        builder: (_, _) => const SizedBox.shrink(),
       ),
       GoRoute(
         path: AppRoute.home.routeAddress,
         name: AppRoute.home.name,
-        builder: (_, __) => const HomeView(),
+        builder: (_, _) => const HomeView(),
       ),
     ],
   );

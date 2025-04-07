@@ -6,23 +6,20 @@ class WholeNumberLengthLimitingTextInputFormatter extends TextInputFormatter {
   final int maxNumbers;
 
   /// Constructor
-  WholeNumberLengthLimitingTextInputFormatter(
-    this.maxNumbers,
-  ) : assert(maxNumbers >= 0, "Argument can't be negative");
+  WholeNumberLengthLimitingTextInputFormatter(this.maxNumbers)
+    : assert(maxNumbers >= 0, "Argument can't be negative");
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
     final text = newValue.text.trim();
     if (text.isEmpty) return newValue.copyWith(text: text);
-
     if (text.length > maxNumbers || text.contains(RegExp(r'[\D]'))) return oldValue;
 
     final parsed = int.tryParse(text);
-
     if (parsed == null) return oldValue;
-
     final selection = newValue.selection;
     final parsedString = parsed.toString();
+
     return newValue.copyWith(
       text: parsedString,
       selection: selection.copyWith(
