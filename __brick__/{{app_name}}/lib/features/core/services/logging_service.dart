@@ -1,98 +1,103 @@
+// ignore_for_file: avoid-dynamic
+// Many signature matching for child libraries that use dynamic themselves
+// ignore_for_file: avoid_annotating_with_dynamic
+
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:talker/talker.dart';
 import 'package:talker_dio_logger/talker_dio_logger_interceptor.dart';
 import 'package:talker_dio_logger/talker_dio_logger_settings.dart';
 
 import '/locator.dart';
 
-/// Logs important events
-class LoggingService {
-  final Talker _talker = Talker(
-    // observer: _CrashlyticsObserver(),
+mixin class LoggingService {
+  static final _talker = Talker(
+    observer: kReleaseMode ? _CrashlyticsObserver() : null,
     settings: TalkerSettings(
       useHistory: false,
+      colors: {TalkerLogType.verbose.key: AnsiPen()..green()},
     ),
     logger: TalkerLogger(
-      formatter: !Platform.isIOS ? const ColoredLoggerFormatter() : const ExtendedLoggerFormatter(),
+      formatter: const ColoredLoggerFormatter(),
       settings: TalkerLoggerSettings(
         enableColors: !Platform.isIOS,
+        colors: {LogLevel.verbose: AnsiPen()..green()},
       ),
     ),
   );
 
-  /// Successful critical event
-  void Function(dynamic msg, [Object? exception, StackTrace? stackTrace]) get good => _talker.good;
+  void logSuccess(dynamic msg, [Object? exception, StackTrace? stackTrace]) =>
+      _talker.verbose('✅ $msg', exception, stackTrace);
 
-  /// Common/general event
-  void Function(dynamic msg, [Object? exception, StackTrace? stackTrace]) get info =>
-      _talker.verbose;
+  void logDebug(dynamic msg, [Object? exception, StackTrace? stackTrace]) =>
+      _talker.debug('🐛 $msg', exception, stackTrace);
 
-  /// Non-fatal but important/recovered event
-  void Function(dynamic msg, [Object exception, StackTrace stackTrace]) get warning =>
-      _talker.warning;
+  void logNote(dynamic msg, [Object? exception, StackTrace? stackTrace]) =>
+      _talker.info('☝️ $msg', exception, stackTrace);
 
-  /// Fatal and important recorded event
-  void Function(dynamic msg, [Object? exception, StackTrace? stackTrace]) get error =>
-      _talker.error;
+  void logWarning(dynamic msg, [Object? exception, StackTrace? stackTrace]) =>
+      _talker.warning('🚧 $msg', exception, stackTrace);
 
-  /// Initialised successfully
-  /// Generally reserved for ViewModels
-  void successfulInit({required String location}) =>
-      _talker.good('[$location] 📚 I am initialized');
+  void logError(dynamic msg, [Object? exception, StackTrace? stackTrace]) =>
+      _talker.error('❌ $msg', exception, createStackTrace(stackTrace: stackTrace));
 
-  /// Disposed successfully
-  /// Generally reserved for ViewModels
-  void successfulDispose({required String location}) =>
-      _talker.good('[$location] 🗑 I am disposed');
+  void logException(Object exception, [StackTrace? stackTrace, dynamic msg]) =>
+      _talker.handle(exception, createStackTrace(stackTrace: stackTrace), '❌ $msg');
+
+  void logVmInit({required String vmName}) => logSuccess('${vmName}ViewModel 📚 I am initialized');
+
+  void logVmDispose({required String vmName}) => logSuccess('${vmName}ViewModel 🗑 I am disposed');
+
+  static StackTrace createStackTrace({required StackTrace? stackTrace}) {
+    StackTrace localStackTrace;
+    try {
+      localStackTrace =
+          stackTrace ??
+          StackTrace.fromString(StackTrace.current.toString().split('\n').sublist(1).join('\n'));
+    } on Exception catch (_) {
+      localStackTrace = StackTrace.current;
+    }
+
+    return localStackTrace;
+  }
 
   /// Adds logging to dio calls
-  void addLoggingInterceptor({
-    required Dio dio,
-    required TalkerDioLoggerSettings? talkerDioLoggerSettings,
-  }) {
+  static void addLoggingInterceptor({required Dio dio}) {
     dio.interceptors.add(
       TalkerDioLogger(
         talker: Talker(
           logger: TalkerLogger(formatter: const ColoredLoggerFormatter()),
-          settings: TalkerSettings(
-            useHistory: false,
-          ),
+          settings: TalkerSettings(useHistory: false),
         ),
-        settings: talkerDioLoggerSettings ??
-            const TalkerDioLoggerSettings(
-              printRequestHeaders: true,
-              printResponseHeaders: true,
-            ),
+        settings: const TalkerDioLoggerSettings(printRequestData: false, printResponseData: false),
       ),
     );
   }
 
-  /// Locates for DI
   static LoggingService get locate => Locator.locate();
 }
 
-// class _CrashlyticsObserver implements TalkerObserver {
-//   final crashlyticsInstance = FirebaseCrashlytics.instance;
-//
-//   @override
-//   void onLog(TalkerDataInterface talkerLog) =>
-//       crashlyticsInstance.log('[${talkerLog.title}] | ${talkerLog.displayMessage}');
-//
-//   @override
-//   void onError(TalkerError talkerError) => crashlyticsInstance.recordError(
-//         talkerError.error,
-//         talkerError.stackTrace,
-//         reason: '[${talkerError.title}]\n${talkerError.displayMessage}',
-//         fatal: true,
-//       );
-//
-//   @override
-//   void onException(TalkerException talkerException) => crashlyticsInstance.recordError(
-//         talkerException.exception,
-//         talkerException.stackTrace,
-//         reason: '[${talkerException.title}]\n${talkerException.displayMessage}',
-//         fatal: true,
-//       );
-// }
+class _CrashlyticsObserver implements TalkerObserver {
+  final crashlyticsInstance = FirebaseCrashlytics.instance;
+
+  @override
+  void onError(TalkerError talkerError) => crashlyticsInstance.recordError(
+    talkerError.error,
+    talkerError.stackTrace,
+    reason: talkerError.displayMessage,
+  );
+
+  @override
+  void onException(TalkerException talkerException) => crashlyticsInstance.recordError(
+    talkerException.exception,
+    talkerException.stackTrace,
+    reason: talkerException.displayMessage,
+  );
+
+  @override
+  void onLog(TalkerData talkerLog) =>
+      crashlyticsInstance.log('[${talkerLog.title}] | ${talkerLog.displayMessage}');
+}
