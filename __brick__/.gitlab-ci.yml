@@ -1,0 +1,499 @@
+image: ghcr.io/cirruslabs/flutter:$LATEST_FLUTTER_VERSION
+
+variables:
+  GIT_CLONE_PATH: '$CI_BUILDS_DIR/$CI_PROJECT_NAME/$CI_PIPELINE_ID/$CI_JOB_ID'
+  FLUTTER_ANDROID_BUILD_DIR: "$PROJECT_PATH/build/app/outputs/flutter-apk"
+  FLUTTER_IOS_BUILD_DIR: "$PROJECT_PATH/build/ios/ipa"
+
+stages:
+  - MR checks
+  - Base code checks
+  - Code analysis
+  - test
+  - Build dev packages
+  - Develop updated
+  - Deploy
+
+.ssh_dependencies_access_setup: &ssh_dependencies_access_setup
+  - if [ -f /.dockerenv ]; then
+      echo "Setting up Docker environment 🐳";
+      command -v ssh-agent >/dev/null || ( apt update -y && apt install openssh-client -y );
+      eval $(ssh-agent -s);
+      mkdir -p ~/.ssh;
+      echo "$SPARE_SSH_PRIVATE_KEY_64_ENCODED" | base64 --decode | tr -d '\r' > ~/.ssh/id_ed25519;
+      chmod 600 ~/.ssh/id_ed25519;
+      ssh-keygen -y -f ~/.ssh/id_ed25519 > ~/.ssh/id_ed25519.pub;
+      chmod 700 ~/.ssh;
+      ssh-keyscan $CI_SERVER_HOST >> ~/.ssh/known_hosts;
+      chmod 644 ~/.ssh/known_hosts;
+    else
+      echo "Skipping Docker environment setup, assuming manual setup is enough... ⏭️";
+    fi
+  - git remote set-url origin git@$CI_SERVER_HOST:$CI_PROJECT_PATH.git;
+
+.flutter_project_setup: &flutter_project_setup
+  - cd $PROJECT_PATH
+  - if [ -e $HOME/.aliases ]; then
+      shopt -s expand_aliases;
+      source $HOME/.aliases;
+      echo "Aliases loaded 📖";
+    fi
+  - *ssh_dependencies_access_setup
+
+  - if [ ! -f /.dockerenv ] && [ "$(flutter --version | awk 'NR==1 {print $2}' | xargs)" != "$LATEST_FLUTTER_VERSION" ]; then
+      echo "Flutter version requirement mismatch 🚨";
+      echo "The latest version is $LATEST_FLUTTER_VERSION but you have $(flutter --version | awk 'NR==1 {print $2}').";
+      exit 1;
+  - fi
+  - flutter pub get
+  - flutter gen-l10n --template-arb-file=intl_en.arb
+  - export PATH="$PATH":"$HOME/.pub-cache/bin"
+
+
+
+Git conventions checks:
+  stage: MR checks
+  tags:
+    - unix
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  cache: []
+  variables:
+    MAX_COMMIT_MESSAGE_LENGTH: 82
+  script:
+    - git fetch --prune
+    - if [ -z "$CI_MERGE_REQUEST_DESCRIPTION" ]; then
+        echo "Merge request body is empty";
+        exit 1;
+      elif ! echo "$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME" | grep -Eq '^(feature|bugfix|chore|refactor|acceptance-test-issues|hotfix)/[a-zA-Z]+-[0-9]+.*$'; then
+        echo "Source branch name does not match the regular expression. Can only be one of feature|bugfix|chore|refactor|acceptance-test-issues|hotfix";
+        exit 1;
+      elif [ $(git log --merges origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME.. --pretty=format:"%H" | wc -l) -ne 0 ]; then
+        echo "Merge commits found in the merge request.";
+        exit 1;
+      fi
+
+    - commitMessages=$(git log origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME.. --pretty=format:%s)
+    - while read -r commitMessage; do
+        if [ ${#commitMessage} -gt $MAX_COMMIT_MESSAGE_LENGTH ]; then
+          echo "Commit message exceeds $MAX_COMMIT_MESSAGE_LENGTH characters -> $commitMessage";
+          exit 1;
+        fi
+      done <<< "$commitMessages";
+
+    - echo "All git conventions followed ✅"
+
+MR requirements:
+  stage: MR checks
+  tags:
+    - unix
+  cache: []
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  script:
+    - sem_labels_count=$(echo "$CI_MERGE_REQUEST_LABELS" | tr ',' '\n' | grep -c '^sem-')
+    - if [ "$sem_labels_count" -ne 1 ]; then
+        echo "❌ There must be exactly one label starting with 'sem-', but found $sem_labels_count.";
+        exit 1;
+      fi
+
+    - echo "All MR requirements fulfilled ✅";
+
+
+
+Dart format:
+  stage: Base code checks
+  only:
+    - merge_requests
+  tags:
+    - unix
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  before_script:
+    - *flutter_project_setup
+  script:
+    - dart format --set-exit-if-changed .
+
+Flutter analyze:
+  stage: Base code checks
+  tags:
+    - unix
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  variables:
+    # Space-separated list of lints to ignore
+    IGNORED_LINTS: "deprecated_member_use_from_same_package"
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  before_script:
+    - *flutter_project_setup
+    - if ! command -v yq &> /dev/null; then
+        wget -q https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq || (echo "Failed to install yq" && exit 1);
+        chmod +x /usr/local/bin/yq;
+      fi
+    - for lint in $IGNORED_LINTS; do
+        yq eval ".analyzer.errors.$lint = \"ignore\"" -i "analysis_options.yaml";
+      done
+  script:
+    - flutter analyze .
+
+Unit test:
+  stage: Base code checks
+  tags:
+    - unix
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  before_script:
+    - *flutter_project_setup
+  script:
+    - flutter test --machine --coverage test/tests.dart
+    - lcov --summary coverage/lcov.info
+    - lcov -r coverage/lcov.info
+      --ignore-errors unused
+      '*/__test*__/*'
+      '**/mock_*.dart'
+      '**/*.g.dart'
+      '**/*.gr.dart'
+      '*/generated/*'
+      '**/*.freezed.dart'
+      '**/*.mocks.dart'
+      '**/*.config.dart'
+      '*/l10n/**'
+      -o coverage/lcov_cleaned.info
+
+    - genhtml coverage/lcov_cleaned.info --output=coverage
+    - coverage_check=$(flutter pub run test_cov_console --file=coverage/lcov_cleaned.info --pass=$TEST_MIN_COVERAGE)
+    - if [ "$coverage_check" == "PASSED" ]; then
+        echo "Good coverage";
+        exit 0;
+      else
+        echo "Coverage less than $TEST_MIN_COVERAGE";
+        exit 1;
+      fi
+  coverage: '/\s*lines\.*:\s*([\d\.]+%)/'
+
+Code generation:
+  stage: Base code checks
+  tags:
+    - unix
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  before_script:
+    - *flutter_project_setup
+  script:
+    - dart run build_runner build --delete-conflicting-outputs
+    - dart fix --apply . && dart format .
+    - git diff --exit-code
+
+
+
+Translations:
+  stage: Base code checks
+  tags:
+    - unix
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  variables:
+    UNTRANSLATED_FILE_PATH: 'lib/l10n/untranslated.json'
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  before_script:
+    - *flutter_project_setup
+  script:
+    - flutter gen-l10n --template-arb-file=intl_en.arb --untranslated-messages-file $UNTRANSLATED_FILE_PATH
+    - untranslated_messages=$(jq -r 'select(length > 0) | to_entries[] | "\(.key) -> \(.value[])"' "$UNTRANSLATED_FILE_PATH" 2>/dev/null)
+    - rm -f "$UNTRANSLATED_FILE_PATH"
+
+    - if [[ -n "$untranslated_messages" ]]; then
+        echo "There are untranslated messages... 🚨";
+        echo "$untranslated_messages";
+        exit 1;
+      fi
+    - echo "All messages are translated 🌎"
+
+
+
+#Dart code metrics:
+#  stage: Code analysis
+#  rules:
+#    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+#      allow_failure: true
+#  tags:
+#    - unix
+#  before_script:
+#    - *flutter_project_setup
+#    - dart pub global activate dart_code_metrics
+#  script:
+#    - metrics lib -r json --disable-sunset-warning > gl-code-quality-report.json
+#    - metrics lib -r html --disable-sunset-warning
+#  artifacts:
+#    reports:
+#      codequality: gl-code-quality-report.json
+#    paths:
+#      - metrics
+
+
+
+Test APK:
+  stage: Build dev packages
+  tags:
+    - unix
+  variables:
+    GRADLE_VERSION: '8.11.1'
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+    - key: android-build
+      paths:
+        - $HOME/.gradle/caches/$GRADLE_VERSION
+        - $HOME/.gradle/wrapper/dists/gradle-$GRADLE_VERSION-bin
+        - /opt/android-sdk-linux
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  artifacts:
+    paths:
+      - "$FLUTTER_ANDROID_BUILD_DIR/**.apk"
+    expire_in: 1 days
+  before_script:
+    - *ssh_dependencies_access_setup
+    - echo $GOOGLE_SERVICES_JSON_ENCODED | base64 --decode > $PROJECT_PATH/android/app/google-services.json
+    - keytool -genkey -v -keystore $PROJECT_PATH/android/app/development-keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias development -dname "CN=Developer, OU=Dimerce B.V, O=Didata B.V, L=Didam, S=Gelderland, C=NL" -storepass $DEV_ANDROID_KEYSTORE_PASSWORD -keypass $DEV_ANDROID_KEY_PASSWORD
+    - printf "storePassword=$DEV_ANDROID_KEYSTORE_PASSWORD\nkeyPassword=$DEV_ANDROID_KEY_PASSWORD\nkeyAlias=development\nstoreFile=development-keystore.jks" > $PROJECT_PATH/android/key.properties
+    - jira_issue_tag="$(echo $CI_MERGE_REQUEST_TITLE | perl -nle 'print $1 if /([A-Z]+-[0-9]+)/')"
+  script:
+    - ./scripts/Build-APK.sh
+    - mv "$FLUTTER_ANDROID_BUILD_DIR/app-develop-release.apk" "$FLUTTER_ANDROID_BUILD_DIR/$jira_issue_tag-app-develop-release.apk"
+
+Test IPA:
+  stage: Build dev packages
+  tags:
+    - macos
+    - shell.executor
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  artifacts:
+    paths:
+      - "$FLUTTER_IOS_BUILD_DIR/**.ipa"
+    expire_in: 1 days
+  before_script:
+    - *ssh_dependencies_access_setup
+    - echo $GOOGLE_SERVICES_INFO_PLIST_ENCODED | base64 --decode > $PROJECT_PATH/ios/GoogleService-Info.plist
+    - jira_issue_tag="$(echo $CI_MERGE_REQUEST_TITLE | perl -nle 'print $1 if /([A-Z]+-[0-9]+)/')"
+  script:
+    - ./scripts/Build-IPA.sh
+    - mv "$FLUTTER_IOS_BUILD_DIR/Scanner dev.ipa" "$FLUTTER_IOS_BUILD_DIR/$jira_issue_tag-app-develop-release.ipa"
+
+Publish to Jira:
+  stage: Build dev packages
+  tags:
+    - unix
+  needs:
+    - job: Test APK
+      artifacts: true
+    - job: Test IPA
+      artifacts: true
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  variables:
+    ACCEPT_JSON_HEADER: 'Accept: application/json'
+    NO_CSRF_CHECK_HEADER: 'X-Atlassian-Token: no-check'
+    JIRA_API_URL: 'https://didatagroep.atlassian.net/rest/api/3'
+  before_script:
+    - jira_issue_tag="$(echo $CI_MERGE_REQUEST_TITLE | perl -nle 'print $1 if /([A-Z]+-[0-9]+)/')"
+    - apk_filename="$jira_issue_tag-app-develop-release.apk"
+    - ipa_filename="$jira_issue_tag-app-develop-release.ipa"
+  script:
+    - ticket_apk_attachment_id=$(curl --request GET --url "$JIRA_API_URL/issue/$jira_issue_tag" --user "$JIRA_API_USER_CREDS_HEADER" --header "$ACCEPT_JSON_HEADER" | jq -r --arg apk_filename "$apk_filename" '.fields.attachment[] | select(.mimeType == "application/vnd.android.package-archive" and .filename == $apk_filename) | .id')
+    - if [ -n "$ticket_apk_attachment_id" ]; then
+        echo "Deleting existing attachment $ticket_apk_attachment_id ⌫ ...";
+        curl --request DELETE --url "$JIRA_API_URL/attachment/$ticket_apk_attachment_id" --user "$JIRA_API_USER_CREDS_HEADER";
+        echo "Deleted existing attachment $ticket_apk_attachment_id 🧹";
+      fi
+
+    - ticket_ipa_attachment_id=$(curl --request GET --url "$JIRA_API_URL/issue/$jira_issue_tag" --user "$JIRA_API_USER_CREDS_HEADER" --header "$ACCEPT_JSON_HEADER" | jq -r --arg ipa_filename "$ipa_filename" '.fields.attachment[] | select(.mimeType == "application/octet-stream" and .filename == $ipa_filename) | .id')
+    - if [ -n "$ticket_ipa_attachment_id" ]; then
+        echo "Deleting existing attachment $ticket_ipa_attachment_id ⌫ ...";
+        curl --request DELETE --url "$JIRA_API_URL/attachment/$ticket_ipa_attachment_id" --user "$JIRA_API_USER_CREDS_HEADER";
+        echo "Deleted existing attachment $ticket_ipa_attachment_id 🧹";
+      fi
+
+    - curl --request POST --url "$JIRA_API_URL/issue/$jira_issue_tag/attachments" --user "$JIRA_API_USER_CREDS_HEADER" --header "$ACCEPT_JSON_HEADER" --header "$NO_CSRF_CHECK_HEADER" --form "file=@$FLUTTER_ANDROID_BUILD_DIR/$apk_filename"
+    - curl --request POST --url "$JIRA_API_URL/issue/$jira_issue_tag/attachments" --user "$JIRA_API_USER_CREDS_HEADER" --header "$ACCEPT_JSON_HEADER" --header "$NO_CSRF_CHECK_HEADER" --form "file=@$FLUTTER_IOS_BUILD_DIR/$ipa_filename"
+
+  
+
+
+
+Update changlelog:
+  stage: Develop updated
+  tags:
+    - maintainer-access
+    - unix
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  variables:
+    TOKEN_HEADER: 'PRIVATE-TOKEN:'
+  before_script:
+    - *flutter_project_setup
+    - git config user.name $MR_MANAGER_USERNAME
+    - git config user.email "$MR_MANAGER_USERNAME@noreply.$CI_SERVER_HOST"
+  script:
+    - mr_json_content=$(curl --header "$TOKEN_HEADER $MR_MANAGER_TOKEN" "$CI_API_V4_URL/projects/$CI_PROJECT_ID/repository/commits/$CI_COMMIT_SHA/merge_requests")
+    - if [[ "$mr_json_content" == "[]" ]]; then
+        echo "No MRs found associated with the last commit ⏩";
+        exit 0;
+      fi
+
+    - mr_sem_label="$(echo $mr_json_content | jq -r '.[0].labels[] | select(startswith("sem-"))')"
+    - case $mr_sem_label in
+        "sem-skip") echo "Skipping changelog update ⏩";  exit 0 ;;
+        "sem-add") sem_log_type="added" ;;
+        "sem-change") sem_log_type="changed" ;;
+        "sem-deprecate") sem_log_type="deprecated" ;;
+        "sem-remove") sem_log_type="removed" ;;
+        "sem-bugfix") sem_log_type="fixed" ;;
+        "sem-security") sem_log_type="security" ;;
+      esac
+    - mr_title="$(echo $mr_json_content | jq -r '.[0].title')"
+
+    - git pull origin $CI_DEFAULT_BRANCH --rebase
+    - dart run cider log "$sem_log_type" "$mr_title"
+    - git commit -am 'Changelog updated'
+    - git push origin HEAD:$CI_DEFAULT_BRANCH -o ci.skip  # prevent triggering pipeline again
+
+Deploy new tag:
+  stage: Deploy
+  when: manual
+  tags:
+    - maintainer-access
+    - unix
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  before_script:
+    - if [[ "$BUMP_STRATEGY" != "minor" && "$BUMP_STRATEGY" != "patch" && "$BUMP_STRATEGY" != "build" ]]; then
+        echo "BUMP_STRATEGY variable must be one of 'minor', 'patch', or 'build'";
+        exit 1;
+      fi
+    - *flutter_project_setup
+    - git config user.name $MR_MANAGER_USERNAME
+    - git config user.email "$MR_MANAGER_USERNAME@noreply.$CI_SERVER_HOST"
+    - git fetch --tags --prune --prune-tags
+    - git pull origin $CI_DEFAULT_BRANCH --rebase --tags
+  script:
+    - new_version="$(dart run cider bump $BUMP_STRATEGY)"
+    - dart run cider release
+    - git commit -am "Prep for release $new_version"
+    - git tag "v$new_version"
+    - git push --atomic origin HEAD:$CI_DEFAULT_BRANCH "v$new_version" -o ci.skip -o secret_push_protection.skip_all # prevent triggering pipeline again
+
+Create new release:
+  stage: Deploy
+  tags:
+    - maintainer-access
+    - unix
+  cache:
+    - key: dartpub
+      paths:
+        - $HOME/.pub-cache
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  needs:
+    - job: Deploy new tag
+  before_script:
+    - *flutter_project_setup
+    - git fetch --tags --prune --prune-tags
+    - git pull origin $CI_DEFAULT_BRANCH --rebase --tags
+    - new_version="$(dart run cider version)"
+    - release_notes="$(dart run cider describe $new_version --only-body)"
+    - latest_commit_sha="$(git rev-parse --verify HEAD)"
+  script:
+    - |
+      # Construct the JSON payload using jq to avoid formatting issues
+      json_payload=$(jq -n \
+        --arg name "Release v$new_version" \
+        --arg tag_name "v$new_version" \
+        --arg ref "$latest_commit_sha" \
+        --arg description "$release_notes" \
+        '{name: $name, tag_name: $tag_name, ref: $ref, description: $description}'
+      )
+    - |
+      output=$(curl --header "Content-Type: application/json" --header "JOB-TOKEN: $CI_JOB_TOKEN" \
+                --data "$json_payload" \
+                --request POST "$CI_API_V4_URL/projects/$CI_PROJECT_ID/releases"
+      )
+    - echo "$output"
+
+
+
+semgrep-sast:
+  stage: test
+  tags:
+    - docker
+    - unix
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  artifacts:
+    paths:
+      - gl-sast-report.json
+
+secret_detection:
+  stage: test
+  tags:
+    - docker
+    - unix
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+
+SAST Wiki deploy:
+  stage: test
+  tags:
+    - docker
+    - unix
+  needs:
+    - job: semgrep-sast
+      artifacts: true
+  allow_failure: true
+  image: python:3.13
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+  before_script:
+    - *ssh_dependencies_access_setup
+    - git clone --depth 1 --branch release/shallow https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/didata-automatisering/app-tech/sast-wiki-dashboard.git
+    - pip install --upgrade pip
+    - pip install python-gitlab
+  script:
+    - python sast-wiki-dashboard/deploy_wiki_sast_report.py
+
+include:
+  - template: Jobs/SAST.latest.gitlab-ci.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml

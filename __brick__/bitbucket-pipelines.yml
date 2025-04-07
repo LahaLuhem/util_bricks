@@ -1,0 +1,104 @@
+image: ghcr.io/cirruslabs/flutter:3.24.5
+
+
+
+definitions:
+  caches:
+    dartpubcache: $HOME/.pub-cache
+    gradle-cache-cache: $HOME/.gradle/caches/8.5
+    gradle-wrapper-cache: $HOME/.gradle/wrapper/dists/gradle-8.5-bin
+    android-sdk-cache: /opt/android-sdk-linux
+  steps:
+    - step: &Flutter-pub-get
+        name: Flutter Pub Get
+        runs-on:
+          - 'self.hosted'
+        artifacts:
+          - $PROJECT_PATH/.dart_tool/**
+          - $PROJECT_PATH/.flutter-plugins
+          - $PROJECT_PATH/.flutter-plugins-dependencies
+          - $PROJECT_PATH/build/**
+        caches:
+          - dartpubcache
+        script:
+          - cd $PROJECT_PATH
+          - flutter pub get
+
+
+
+pipelines:
+  pull-requests:
+    '{feature/*,bugfix/*,chore/*,refactor/*,acceptance-test-issues/*}':
+    - step: *Flutter-pub-get
+
+    - parallel:
+      - step:
+          name: 'Flutter test'
+          runs-on:
+            - 'self.hosted'
+          caches:
+            - dartpubcache
+          script:
+            - cd $PROJECT_PATH
+            - flutter test --machine --coverage test/tests.dart
+      - step:
+          name: 'Dart format check'
+          runs-on: 
+            - 'self.hosted'
+          caches:
+            - dartpubcache
+          script:
+            - cd $PROJECT_PATH
+            - dart format -l 100 --set-exit-if-changed .
+
+    - parallel:
+      - step:
+          name: 'Code analysis'
+          runs-on:
+            - 'self.hosted'
+          caches:
+            - dartpubcache
+          script:
+            - cd $PROJECT_PATH
+            - flutter gen-l10n --template-arb-file=intl_en.arb
+            - flutter analyze .
+
+    - parallel:
+      - step:
+          name: 'Build test APK'
+          runs-on:
+            - 'macos'
+          caches:
+            - dartpubcache
+            - gradle-cache-cache
+            - gradle-wrapper-cache
+            - android-sdk-cache
+          artifacts:
+            - scanner/build/app/outputs/flutter-apk/**
+          script:
+            - echo $GOOGLE_SERVICES_JSON > $PROJECT_PATH/android/app/google-services.json
+            - keytool -genkey -v -keystore $PROJECT_PATH/android/app/development-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias development -dname "CN=Developer, OU=Dimerce B.V, O=Didata B.V, L=Didam, S=Gelderland, C=NL" -storepass $ANDROID_KEYSTORE_PASSWORD -keypass $ANDROID_KEYSTORE_PASSWORD
+            - printf "storePassword=$ANDROID_KEYSTORE_PASSWORD\nkeyPassword=$ANDROID_KEYSTORE_PASSWORD\nkeyAlias=development\nstoreFile=development-keystore.jks" > $PROJECT_PATH/android/key.properties
+            - ./scripts/Build-APK.sh
+      - step:
+          name: 'Build test IPA'
+          runs-on:
+            - 'macos'
+          caches:
+            - dartpubcache
+            - gradle-cache-cache
+            - gradle-wrapper-cache
+          artifacts:
+            - $PROJECT_PATH/build/ios/ipa/**
+          script:
+            - echo "Change runner to macos and build IPA here"
+
+    - step:
+        name: 'Publish to Jira Ticket'
+        runs-on:
+          - 'self.hosted'
+        script:
+          - curl --request GET --url 'https://api.bitbucket.org/2.0/repositories/$BITBUCKET_REPO_FULL_NAME/pullrequests/$BITBUCKET_PR_ID' --header '$AUTH_HEADER Bearer $PR_MANAGER_TOKEN' --header '$ACCEPT_HEADER application/json' > pr_json_content.txt
+          - issue_tag=$(jq -R -n -f pr_json_content.txt | jq -r '.rendered.title.html' | perl -nle 'print $1 if /browse\/([A-Z]+-[0-9]+)/' )
+          - echo $issue_tag
+

@@ -1,0 +1,9 @@
+# Gitlab
+*/__test*__/* gitlab-generated
+**/mock_*.dart gitlab-generated
+**/*.g.dart gitlab-generated
+**/*.gr.dart gitlab-generated
+**/generated/** gitlab-generated
+**/*.freezed.dart gitlab-generated
+**/*.mocks.dart gitlab-generated
+**/*.config.dart gitlab-generated
