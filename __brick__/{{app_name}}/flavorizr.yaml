@@ -1,33 +1,34 @@
 flavors:
   develop:
     app:
-      name: "{{app_name}} dev"
+      name: "Scanner dev"
     icon: "assets/res/app_icon-dev.png"
 
     android:
-      applicationId: "{{android_app_id}}.dev"
+      applicationId: "com.didata.combipac.scanner.dev"
     ios:
-      bundleId: "{{ios_bundle_id}}.dev"
+      bundleId: "com.didata.combipac.scanner.dev"
     macos:
-      bundleId: "{{ios_bundle_id}}.dev"
+      bundleId: "com.didata.combipac.scanner.dev"
 
 
   prod:
     app:
-      name: "{{app_name}}"
+      name: "Scanner"
     icon: "assets/res/app_icon.png"
 
     android:
-      applicationId: "{{android_app_id}}"
+      applicationId: "com.didata.combipac.scanner"
     ios:
-      bundleId: "{{ios_bundle_id}}"
+      bundleId: "com.didata.combipac.scanner"
     macos:
-      bundleId: "{{ios_bundle_id}}"
+      bundleId: "com.didata.combipac.scanner"
 
 
 
 instructions:
   - android:buildGradle,
+  - android:androidManifest
 #  - android:icons
 #  - ios:xcconfig
 #  - ios:buildTargets
