@@ -31,7 +31,7 @@ vars:
     description: Name of project
     default: example
     prompt: What is the name of the project?
-  dispay_name:
+  display_name:
     type: string
     description: App display name
     default: MyExample
