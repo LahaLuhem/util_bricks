@@ -46,3 +46,8 @@ vars:
     description: iOS bundle ID
     default: com.domain.example
     prompt: What should be iOS app bundle ID?
+  flutter_version:
+    type: string
+    description: starting Flutter version
+    default: stable
+    prompt: What Flutter version do you want to start this with?
