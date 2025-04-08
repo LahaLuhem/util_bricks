@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../views/home/home_view.dart';
@@ -17,7 +16,7 @@ class AppRouter {
       GoRoute(
         path: AppRoute.onboarding.routeAddress,
         name: AppRoute.onboarding.name,
-        builder: (_, _) => const SizedBox.shrink(),
+        builder: (_, _) => throw UnimplementedError(),
       ),
       GoRoute(
         path: AppRoute.home.routeAddress,
