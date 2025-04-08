@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Profile launch Staging" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="additionalArgs" value="--profile" />
+    <option name="buildFlavor" value="develop" />
+    <option name="filePath" value="$PROJECT_DIR$/lib/main_staging.dart" />
+    <method v="2">
+      <option name="RunConfigurationTask" enabled="false" run_configuration_name="CombiPac mock" run_configuration_type="docker-deploy" />
+      <option name="RunConfigurationTask" enabled="false" run_configuration_name="Reverse ADB TCP" run_configuration_type="ShConfigurationType" />
+    </method>
+  </configuration>
+</component>
