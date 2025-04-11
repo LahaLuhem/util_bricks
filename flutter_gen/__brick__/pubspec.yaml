@@ -1,0 +1,26 @@
+flutter_gen:
+  output: {{assets_gen_dir}}
+  line_length: 100
+  parse_metadata: true
+  integrations:
+    image: true
+    flutter_svg: true
+    rive: false
+    lottie: true
+  assets:
+    enabled: true
+    outputs:
+      package_parameter_enabled: false
+      style: dot-delimiter
+      class_name: {{media_class_name}}
+    exclude:
+      - assets/res/**
+  fonts:
+    enabled: true
+    outputs:
+      class_name: {{fonts_class_name}}
+  colors:
+    enabled: false
+    inputs: []
+    outputs:
+      class_name: ConstColors

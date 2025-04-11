@@ -1,17 +1,8 @@
 name: flutter_gen
 description: A new brick created with the Mason CLI.
 
-# The following defines the brick repository url.
-# Uncomment and update the following line before publishing the brick.
-# repository: https://github.com/my_org/my_repo
+version: 0.0.1
 
-# The following defines the version and build number for your brick.
-# A version number is three numbers separated by dots, like 1.2.34
-# followed by an optional build number (separated by a +).
-version: 0.1.0+1
-
-# The following defines the environment for the current brick.
-# It includes the version of mason that the brick requires.
 environment:
   mason: ^0.1.1
 
@@ -26,8 +17,18 @@ environment:
 #  * a list of values (enums only)
 #  * an optional separator (list only)
 vars:
-  name:
+  assets_gen_dir:
     type: string
-    description: Your name
-    default: Dash
-    prompt: What is your name?
+    description: Output folder for generated asset files
+    default: lib/features/core/data/constants/assets/
+    prompt: Where should the generated asset files be placed?
+  media_class_name:
+    type: string
+    description: Class name for media
+    default: ConstMedia
+    prompt: What should the class name for media be?
+  fonts_class_name:
+    type: string
+    description: Class name for fonts
+    default: ConstFonts
+    prompt: What should the class name for fonts be?
