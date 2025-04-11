@@ -1,0 +1,10 @@
+base_locale: en
+fallback_strategy: base_locale
+namespaces: true
+input_file_pattern: .i18n.json
+output_directory: lib/i18n/generated/
+class_name: Strings
+translate_var: strings
+format:
+  enabled: true
+  width: 100
