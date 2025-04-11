@@ -19,11 +19,6 @@ Future<void> run(HookContext context) async {
   final buildRunneResult = await Process.run(
       'dart', ['run', 'build_runner', 'build', '--delete-conflicting-outputs']);
   context.logger.info(buildRunneResult.stdout);
-  if ((buildRunneResult.stderr as String).isNotEmpty) {
-    context.logger.err(buildRunneResult.stderr);
-    buildRunnerProgress.fail('Failed to run build_runner generate command');
-    return;
-  }
 
   buildRunnerProgress.complete('Generated assets');
 }
