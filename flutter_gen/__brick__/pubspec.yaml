@@ -1,3 +1,4 @@
+
 flutter_gen:
   output: {{assets_gen_dir}}
   line_length: 100
