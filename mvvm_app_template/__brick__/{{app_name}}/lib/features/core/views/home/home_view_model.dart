@@ -6,7 +6,6 @@ import '/features/auth/services/auth_service.dart';
 import '../../abstracts/router/app_route.dart';
 import '../../services/logging_service.dart';
 
-@injectable
 class HomeViewModel extends BaseViewModel<void> with LoggingService {
   HomeViewModel({required AuthService authService}) : _authService = authService;
 

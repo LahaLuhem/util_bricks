@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      injectable_generator:injectable_builder:
+        options:
+          auto_register: true
+          # auto registers any class with a name matches the given pattern
+          class_name_pattern: "ViewModel$"
+            # auto registers any class inside a file with a name matches the given pattern
+          file_name_pattern: "_view_model$"
