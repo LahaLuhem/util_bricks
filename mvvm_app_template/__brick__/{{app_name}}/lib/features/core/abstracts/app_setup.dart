@@ -32,7 +32,7 @@ abstract class AppSetup {
 
     await initializeDateFormatting();
 
-    await Locator.setup();
+    await Locator.configureDependencies();
 
     await setupStrings();
   }

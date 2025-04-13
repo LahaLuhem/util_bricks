@@ -3,9 +3,10 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:get_it/get_it.dart';
 import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'package:injectable/injectable.dart';
 
-import '/locator.dart';
 import '../../data/constants/const_keys.dart';
 import '../../data/extensions/core_extensions.dart';
 import '../../data/models/app_settings_model.dart';
@@ -16,6 +17,7 @@ import '../storage_service.dart';
 part 'hive_custom_adapters.dart';
 // part 'hive_storage_service.g.dart';
 
+@Singleton(as: StorageService, signalsReady: true)
 @GenerateAdapters([])
 class HiveStorageService extends StorageService {
   final FlutterSecureStorage _flutterSecureStorage;
@@ -41,7 +43,7 @@ class HiveStorageService extends StorageService {
     // Normal boxes
     _appSettingsBox = await Hive.openBox(_appSettingsBoxKey);
 
-    Locator.instance().signalReady(this);
+    GetIt.instance.signalReady(this);
     signalInitDone();
   }
 
@@ -82,4 +84,10 @@ class HiveStorageService extends StorageService {
   //     ..registerAdapter(_V117EmployeeAdapter(), override: true)
   //     ..registerAdapter(_V113EmployeeSettingsAdapter(), override: true);
   // }
+}
+
+@module
+abstract class RegisterFlutterSecureStorageModule {
+  @singleton
+  FlutterSecureStorage get flutterSecureStorage => const FlutterSecureStorage();
 }

@@ -3,6 +3,7 @@ import '/features/core/services/logging_service.dart';
 import '/locator.dart';
 
 /// Responsible for authentication
+@lazySingleton
 class AuthService with LoggingService {
   /// Constructor
   AuthService();
@@ -18,7 +19,4 @@ class AuthService with LoggingService {
   Future<void> logout() {
     throw UnimplementedError('Implement me!');
   }
-
-  /// Locator DI
-  static AuthService get locate => Locator.locate();
 }

@@ -1,16 +1,14 @@
+import 'package:go_router/go_router.dart';
+import 'package:injectable/injectable.dart';
 import 'package:veto/veto.dart';
 
 import '/features/auth/services/auth_service.dart';
-import '/locator.dart';
+import '../../abstracts/router/app_route.dart';
 import '../../services/logging_service.dart';
-import '../../services/navigation/navigation_service.dart';
 
-/// Home VM
+@injectable
 class HomeViewModel extends BaseViewModel<void> with LoggingService {
-  /// Constructor
-  HomeViewModel({required AuthService authService, required NavigationService navigationService})
-    : _authService = authService,
-      _navigationService = navigationService;
+  HomeViewModel({required AuthService authService}) : _authService = authService;
 
   @override
   void initialise() {
@@ -19,12 +17,11 @@ class HomeViewModel extends BaseViewModel<void> with LoggingService {
   }
 
   final AuthService _authService;
-  final NavigationService _navigationService;
 
   /// On press of the logout button
   Future<void> onLogoutPressed() async {
     await _authService.logout();
-    _navigationService.home.popUntilLogin(context!);
+    context!.goNamed(AppRoute.onboarding.name);
   }
 
   @override
@@ -32,6 +29,4 @@ class HomeViewModel extends BaseViewModel<void> with LoggingService {
     super.dispose();
     logVmDispose(vmName: 'Home');
   }
-
-  static HomeViewModel get locate => Locator.locate();
 }

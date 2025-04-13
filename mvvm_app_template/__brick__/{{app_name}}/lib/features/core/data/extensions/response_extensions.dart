@@ -4,10 +4,12 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:get_it/get_i t.dart';
 
+import '/locator.dart';
 import '../../services/logging_service.dart';
 
-final _loggingService = LoggingService.locate;
+final _loggingService = Locator.locate<LoggingService>();
 
 extension ResponseExtension<T> on Response<T> {
   bool get isNotOk => statusCode != HttpStatus.ok;

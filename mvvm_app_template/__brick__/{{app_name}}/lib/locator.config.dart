@@ -1,4 +1,4 @@
-// dart format width=100
+// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
 // **************************************************************************
@@ -21,16 +21,22 @@ import 'features/core/views/home/home_view_model.dart' as _i104;
 
 extension GetItInjectableX on _i174.GetIt {
   // initializes the registration of main-scope dependencies inside of GetIt
-  _i174.GetIt init({String? environment, _i526.EnvironmentFilter? environmentFilter}) {
+  _i174.GetIt init({
+    String? environment,
+    _i526.EnvironmentFilter? environmentFilter,
+  }) {
     final gh = _i526.GetItHelper(this, environment, environmentFilter);
-    final registerFlutterSecureStorageModule = _$RegisterFlutterSecureStorageModule();
+    final registerFlutterSecureStorageModule =
+        _$RegisterFlutterSecureStorageModule();
     gh.factory<_i969.LoggingService>(() => _i969.LoggingService());
     gh.singleton<_i558.FlutterSecureStorage>(
       () => registerFlutterSecureStorageModule.flutterSecureStorage,
     );
     gh.lazySingleton<_i620.AuthService>(() => const _i620.AuthService());
     gh.singleton<_i568.StorageService>(
-      () => _i511.HiveStorageService(flutterSecureStorage: gh<_i558.FlutterSecureStorage>()),
+      () => _i511.HiveStorageService(
+        flutterSecureStorage: gh<_i558.FlutterSecureStorage>(),
+      ),
       signalsReady: true,
     );
     gh.factory<_i104.HomeViewModel>(
@@ -40,4 +46,5 @@ extension GetItInjectableX on _i174.GetIt {
   }
 }
 
-class _$RegisterFlutterSecureStorageModule extends _i511.RegisterFlutterSecureStorageModule {}
+class _$RegisterFlutterSecureStorageModule
+    extends _i511.RegisterFlutterSecureStorageModule {}

@@ -3,6 +3,7 @@ import 'package:flutter_platform_widgets/flutter_platform_widgets.dart';
 import 'package:veto/veto.dart';
 
 import '/features/core/widgets/core_widgets.dart';
+import '/locator.dart';
 import 'home_view_model.dart';
 
 /// Home view with the tabs
@@ -12,7 +13,7 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ViewModelBuilder(
-    viewModelBuilder: () => HomeViewModel.locate,
+    viewModelBuilder: () => Locator.locate<HomeViewModel>(),
     builder:
         (context, model, isInitialised, _) => PlatformScaffold(
           appBar: GsAppBar(),
