@@ -1,6 +1,7 @@
+import 'package:injectable/injectable.dart';
+
 import '/features/core/data/typedefs/http_status_code_extension.dart';
 import '/features/core/services/logging_service.dart';
-import '/locator.dart';
 
 /// Responsible for authentication
 @lazySingleton

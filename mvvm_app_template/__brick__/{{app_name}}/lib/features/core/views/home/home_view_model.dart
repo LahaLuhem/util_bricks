@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:injectable/injectable.dart';
 import 'package:veto/veto.dart';
 
 import '/features/auth/services/auth_service.dart';

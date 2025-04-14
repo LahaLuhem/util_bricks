@@ -15,26 +15,21 @@ import '../data/enums/supported_language.dart';
 
 /// Handles setting up of the app.
 abstract class AppSetup {
-  // TODO(mehul): When locator is properly refactored we should not have to use these stub methods for testing
   /// Initializes everything before the app is run.
-  static Future<void> initialise({
-    List<VoidCallback>? locatorSetupStubs,
-    List<VoidCallback>? locatorInitStubs,
-  }) async {
+  static Future<void> initialise() async {
     WidgetsFlutterBinding.ensureInitialized();
 
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+    await [
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]),
+      Firebase.initializeApp(),
+      initializeDateFormatting(),
+      setupStrings(),
+    ].wait;
 
-    await Firebase.initializeApp();
-
-    await initializeDateFormatting();
-
-    await Locator.configureDependencies();
-
-    await setupStrings();
+    await Locator.setup();
   }
 
   /// Resolves the supported locales
